@@ -1,0 +1,1274 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="theme-color" content="#2442A8"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/apple-touch-icon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Future Ledger"></head><body>
+<title>Future Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@500;600&family=Public+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky tab rail over a two-column workbench (inputs left, live results right); stacks to one column on phones */
+:root{
+  --paper:#F3F5F8; --surface:#FFFFFF; --ink:#152030; --muted:#5B6878; --line:#DDE3EA;
+  --accent:#2442A8; --accent-ink:#FFFFFF; --soft:#E7ECFA;
+  --good:#1D7A4D; --warn:#93600E; --bad:#B23838; --good-bg:#E3F3EA; --warn-bg:#FBF0DC; --bad-bg:#FBE6E6;
+  --c-home:#2442A8; --c-car:#2A8BAD; --c-loan:#8B5BC4; --c-card:#C2510F; --c-life:#8E99A8; --c-left:#1D7A4D;
+  --f-display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --r:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E141C; --surface:#151E2A; --ink:#E5EBF2; --muted:#94A1B1; --line:#283445;
+    --accent:#8FA8FF; --accent-ink:#0E141C; --soft:#1C2742;
+    --good:#52C48F; --warn:#E3AA4E; --bad:#F27777; --good-bg:#14301F; --warn-bg:#33270F; --bad-bg:#3A1A1A;
+    --c-home:#8FA8FF; --c-car:#58C0DD; --c-loan:#B892EA; --c-card:#F29A5C; --c-life:#7D8898; --c-left:#52C48F;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E141C; --surface:#151E2A; --ink:#E5EBF2; --muted:#94A1B1; --line:#283445;
+  --accent:#8FA8FF; --accent-ink:#0E141C; --soft:#1C2742;
+  --good:#52C48F; --warn:#E3AA4E; --bad:#F27777; --good-bg:#14301F; --warn-bg:#33270F; --bad-bg:#3A1A1A;
+  --c-home:#8FA8FF; --c-car:#58C0DD; --c-loan:#B892EA; --c-card:#F29A5C; --c-life:#7D8898; --c-left:#52C48F;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:15px/1.5 var(--f-body);-webkit-text-size-adjust:100%}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{padding-block:22px 10px}
+.brand{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font:700 1.7rem/1.05 var(--f-display);letter-spacing:-.015em;margin:0}
+.tagline{color:var(--muted);margin:6px 0 0;font-size:.92rem;max-width:56ch}
+.status{display:inline-flex;align-items:center;gap:7px;font-size:.78rem;padding:5px 11px;border-radius:99px;background:var(--surface);border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--warn)}
+.status[data-mode="account"]::before,.status[data-mode="local"]::before{background:var(--good)}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--paper);border-bottom:1px solid var(--line)}
+.tabrow{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-block:8px}
+.tabrow::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;font:600 .9rem var(--f-body);color:var(--muted);background:none;border:0;padding:8px 13px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main{padding-block:22px 40px}
+.page-head{display:flex;flex-direction:column;gap:4px}
+.page-head h2{font:700 1.4rem/1.2 var(--f-display);margin:0;text-wrap:balance}
+.page-head p{margin:0;color:var(--muted);max-width:64ch}
+.bench{display:grid;gap:18px;grid-template-columns:minmax(0,1fr);margin-top:18px;align-items:start}
+@media (min-width:900px){.bench{grid-template-columns:minmax(0,390px) minmax(0,1fr)}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:18px;min-width:0}
+.panel h3{font:600 .72rem var(--f-body);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin:0 0 12px}
+.panel h3 + .note{margin-top:-6px;margin-bottom:12px}
+.fields{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field.wide{grid-column:1/-1}
+.lab{font-size:.8rem;color:var(--muted);font-weight:500}
+.inp{display:flex;align-items:center;border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:0 10px;min-width:0}
+.inp:focus-within{border-color:var(--accent)}
+.inp i{font-style:normal;color:var(--muted);font:500 .82rem var(--f-num)}
+.inp input,.inp select{flex:1;min-width:0;width:100%;border:0;background:transparent;color:var(--ink);font:500 .95rem var(--f-num);padding:9px 4px;outline:none;font-variant-numeric:tabular-nums}
+.inp input[type="text"]{font-family:var(--f-body)}
+.inp select{font-family:var(--f-body);padding-right:0}
+.field small{color:var(--muted);font-size:.74rem;line-height:1.35}
+.sep{grid-column:1/-1;border-top:1px dashed var(--line);margin:2px 0}
+.sub{grid-column:1/-1;font:600 .72rem var(--f-body);text-transform:uppercase;letter-spacing:.09em;color:var(--muted);margin-top:4px}
+.check{display:flex;gap:10px;align-items:center;font-weight:500;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--accent)}
+.results{display:flex;flex-direction:column;gap:16px;min-width:0}
+.stats{display:grid;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:640px){.stats.four{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.stat{padding:14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);min-width:0}
+.stat .k{font-size:.76rem;color:var(--muted);font-weight:500}
+.stat .v{font:600 1.4rem/1.2 var(--f-num);letter-spacing:-.03em;font-variant-numeric:tabular-nums;margin-top:6px;overflow-wrap:anywhere}
+.stat .s{font-size:.75rem;color:var(--muted);margin-top:3px}
+.stat.lead{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.stat.lead .k,.stat.lead .s{color:inherit;opacity:.82}
+.v.good{color:var(--good)} .v.warn{color:var(--warn)} .v.bad{color:var(--bad)}
+.chartbox{min-width:0}
+.chart{width:100%;height:auto;display:block}
+.chart text{fill:var(--muted);font:11px var(--f-num)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.8rem;color:var(--muted);margin-top:8px}
+.legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;background:var(--c);vertical-align:-1px}
+.legend span.dash::before{height:0;border-top:2px dashed var(--c);background:none;vertical-align:3px}
+.chip{display:inline-block;font:600 .72rem var(--f-body);padding:3px 9px;border-radius:99px;white-space:nowrap;align-self:start}
+.chip.good{color:var(--good);background:var(--good-bg)}
+.chip.warn{color:var(--warn);background:var(--warn-bg)}
+.chip.bad{color:var(--bad);background:var(--bad-bg)}
+.checks{list-style:none;margin:0;padding:0}
+.checks li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 12px;padding:12px 0;border-top:1px solid var(--line)}
+.checks li:first-child{border-top:0;padding-top:0}
+.checks b{font-weight:600;font-size:.92rem}
+.checks p{grid-column:1/-1;margin:0;color:var(--muted);font-size:.83rem}
+.alloc{display:flex;height:24px;border-radius:6px;overflow:hidden;gap:2px}
+.alloc div{background:var(--c);min-width:3px}
+.rows{display:flex;flex-direction:column}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:.9rem}
+.row:first-child{border-top:0}
+.row .n{font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+.row .sw{display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--c);margin-right:8px}
+.row .pc{color:var(--muted);font-size:.78rem;margin-left:8px}
+#cardRows .row{flex-wrap:wrap}
+.row.total{font-weight:600;border-top:1.5px solid var(--ink)}
+.presets{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:600 .85rem var(--f-body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 12px;border-radius:8px;cursor:pointer;line-height:1.2}
+.btn:hover{border-color:var(--muted)}
+.btn.on{border-color:var(--accent);background:var(--soft)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.small{padding:6px 10px;font-size:.8rem}
+.btn.danger{color:var(--bad)}
+.note{font-size:.82rem;color:var(--muted);margin:0}
+.callout{padding:12px 14px;border-radius:var(--r);background:var(--soft);font-size:.88rem}
+.banner{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:12px 14px;border-radius:var(--r);background:var(--soft);font-size:.88rem;margin-top:16px}
+.list{display:flex;flex-direction:column;gap:12px}
+.item{border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;gap:12px;background:var(--paper)}
+.item .inp{background:var(--surface)}
+.item-head{display:flex;gap:8px;align-items:center}
+.item-head .inp{flex:1}
+.jobs{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));margin-top:18px}
+.job{background:var(--surface)}
+.job.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.job .rows{font-size:.86rem}
+.bars{display:flex;flex-direction:column;gap:10px}
+.bar{display:grid;grid-template-columns:minmax(0,9rem) minmax(0,1fr) auto;gap:10px;align-items:center;font-size:.85rem}
+.bar .track{height:12px;background:var(--line);border-radius:6px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:6px}
+.bar .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.include{position:relative;display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:var(--r);background:var(--soft);border:1px solid transparent;cursor:pointer;margin-bottom:16px}
+.include:not(.is-on){background:var(--paper);border:1px dashed var(--line)}
+.include input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.include .sw{flex:0 0 auto;width:42px;height:24px;border-radius:12px;background:var(--line);position:relative;transition:background .15s}
+.include .sw::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--surface);box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s}
+.include input:checked + .sw{background:var(--accent)}
+.include input:checked + .sw::after{transform:translateX(18px)}
+.include input:focus-visible + .sw{outline:2px solid var(--accent);outline-offset:2px}
+.include b{display:block;font-weight:600;font-size:.9rem}
+.include small{display:block;color:var(--muted);font-size:.78rem;line-height:1.35}
+.fields .include{grid-column:1/-1;margin-bottom:0}
+.tab.off::after{content:"off";font:600 .6rem var(--f-body);text-transform:uppercase;letter-spacing:.06em;margin-left:6px;padding:1px 5px;border-radius:4px;border:1px solid var(--line);color:var(--muted);vertical-align:1px}
+.chip.off{color:var(--muted);background:var(--paper);border:1px dashed var(--line)}
+.row.left-out{color:var(--muted)}
+.btn.mine:not(.on){border-style:dashed}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);font:inherit;text-decoration:underline;cursor:pointer}
+.addcar{display:flex;flex-direction:column;gap:8px;border-top:1px dashed var(--line);padding-top:16px}
+.addcar h3{margin:0}
+.cmpwrap{overflow-x:auto}
+.cmp{width:100%;border-collapse:collapse;font-size:.88rem;min-width:300px}
+.cmp th,.cmp td{padding:8px 6px;text-align:right;border-top:1px solid var(--line);white-space:nowrap}
+.cmp th:first-child,.cmp td:first-child{text-align:left;white-space:normal;color:var(--muted)}
+.cmp thead th{border-top:0;font-weight:600;color:var(--ink);font-size:.82rem}
+.cmp td{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.cmp tr.total td{font-weight:600;color:var(--ink);border-top:1.5px solid var(--ink)}
+.cmp td.win{color:var(--good)}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;padding:3px;background:var(--paper);align-self:start}
+.seg button{border:0;background:none;padding:7px 16px;border-radius:6px;font:600 .85rem var(--f-body);color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.ov{display:grid;gap:16px;grid-template-columns:minmax(0,1fr);margin-top:16px}
+@media (min-width:900px){.ov{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}.ov .full{grid-column:1/-1}}
+.panel-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.panel-head h3{margin:0}
+.big{font:600 1.05rem var(--f-num);font-variant-numeric:tabular-nums}
+.dim{opacity:.45;pointer-events:none}
+footer{color:var(--muted);font-size:.78rem;padding-block:22px 36px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+footer p{margin:0;max-width:80ch}
+footer .actions{display:flex;gap:8px;flex-wrap:wrap}
+.movebox{display:flex;flex-direction:column;gap:8px;max-width:640px}
+.movebox textarea{width:100%;min-height:84px;font:12px/1.4 var(--f-num);border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);padding:8px;resize:vertical}
+@media (max-width:420px){.fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}.stat .v{font-size:1.2rem}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="top wrap">
+  <div class="brand">
+    <div>
+      <h1>Future Ledger</h1>
+      <p class="tagline">Plan your money before you commit to it. Add a car, loans, a place to live and a job, and see what's left each month and where you'll be in ten years.</p>
+    </div>
+    <span class="status" id="status" data-mode="example">Example numbers</span>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Sections">
+  <div class="wrap tabrow" role="tablist">
+    <button class="tab" role="tab" data-act="tab" data-tab="overview" id="tab-overview">Overview</button>
+    <button class="tab" role="tab" data-act="tab" data-tab="income" id="tab-income">Income</button>
+    <button class="tab" role="tab" data-act="tab" data-tab="car" id="tab-car">Car</button>
+    <button class="tab" role="tab" data-act="tab" data-tab="loans" id="tab-loans">Student loans</button>
+    <button class="tab" role="tab" data-act="tab" data-tab="cards" id="tab-cards">Credit cards</button>
+    <button class="tab" role="tab" data-act="tab" data-tab="housing" id="tab-housing">Housing</button>
+    <button class="tab" role="tab" data-act="tab" data-tab="jobs" id="tab-jobs">Job offers</button>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <!-- OVERVIEW -->
+  <section class="page" id="page-overview" role="tabpanel">
+    <div class="page-head">
+      <h2>Your plan at a glance</h2>
+      <p>Everything from the other tabs adds up here. Amounts are per month unless marked.</p>
+    </div>
+    <div class="banner" id="exampleBanner">
+      <span>These are example numbers for someone starting out in New Jersey. Replace them with yours on each tab.</span>
+      <button class="btn small primary" data-act="tab" data-tab="income">Start with income</button>
+    </div>
+    <div class="stats four" style="margin-top:16px" id="ovStats"></div>
+    <div class="ov">
+      <div class="panel">
+        <div class="panel-head"><h3>Where each paycheck goes</h3><span class="note" id="ovTakeNote"></span></div>
+        <div class="alloc" id="ovAlloc"></div>
+        <div class="rows" id="ovRows" style="margin-top:10px"></div>
+      </div>
+      <div class="panel">
+        <h3>Health checks</h3>
+        <ul class="checks" id="ovChecks"></ul>
+      </div>
+      <div class="panel full">
+        <div class="panel-head"><h3>Net worth over the next 10 years</h3><span class="note">With raises and inflation</span></div>
+        <div class="chartbox" id="ovChart"></div>
+        <div class="legend" id="ovLegend"></div>
+        <p class="note" style="margin-top:10px" id="ovChartNote"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- INCOME -->
+  <section class="page" id="page-income" role="tabpanel" hidden>
+    <div class="page-head">
+      <h2>Income &amp; everyday spending</h2>
+      <p>Estimates your take-home pay with 2026 federal tax brackets, Social Security and Medicare, and a flat state rate you set.</p>
+    </div>
+    <div class="bench">
+      <div class="panel" id="incomeInputs"></div>
+      <div class="results">
+        <div class="stats" id="incStats"></div>
+        <div class="panel">
+          <h3>Your year, before and after tax</h3>
+          <div class="rows" id="incRows"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAR -->
+  <section class="page" id="page-car" role="tabpanel" hidden>
+    <div class="page-head">
+      <h2>Car ownership</h2>
+      <p>The loan payment is only part of it. This adds insurance, gas or charging and upkeep, tracks what you owe against what the car is worth, and compares a gas car with an electric one.</p>
+    </div>
+    <div class="bench">
+      <div class="panel" id="carInputs"></div>
+      <div class="results" id="carResults">
+        <div class="stats" id="carStats"></div>
+        <div class="panel">
+          <div class="panel-head"><h3>Loan balance vs. car value</h3></div>
+          <div class="chartbox" id="carChart"></div>
+          <div class="legend"><span style="--c:var(--c-car)">Car value</span><span style="--c:var(--bad)" class="dash">Loan balance</span></div>
+          <p class="note" style="margin-top:10px" id="carNote"></p>
+        </div>
+        <div class="panel">
+          <h3>Monthly cost of owning it</h3>
+          <div class="rows" id="carRows"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Gas vs. electric</h3><span class="note">Your gas pick and your electric pick, same driving</span></div>
+          <div class="cmpwrap"><table class="cmp" id="carCompare"></table></div>
+          <p class="note" style="margin-top:10px" id="cmpNote"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOANS -->
+  <section class="page" id="page-loans" role="tabpanel" hidden>
+    <div class="page-head">
+      <h2>Student loans</h2>
+      <p>List each loan. Any extra you pay goes to the highest-rate loan first, and when a loan is paid off its payment rolls into the next one.</p>
+    </div>
+    <div class="bench">
+      <div class="panel" id="loanInputs"></div>
+      <div class="results" id="loanResults">
+        <div class="stats" id="loanStats"></div>
+        <div class="panel">
+          <div class="panel-head"><h3>Total balance until debt-free</h3></div>
+          <div class="chartbox" id="loanChart"></div>
+          <div class="legend" id="loanLegend"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CARDS -->
+  <section class="page" id="page-cards" role="tabpanel" hidden>
+    <div class="page-head">
+      <h2>Credit cards</h2>
+      <p>Card interest adds up fast, so this is often the debt to clear first. Set what you can pay each month and see when you'll be done and what it saves compared with paying only the minimums.</p>
+    </div>
+    <div class="bench">
+      <div class="panel" id="cardInputs"></div>
+      <div class="results" id="cardResults">
+        <div class="stats" id="cardStats"></div>
+        <div class="panel" id="cardMinPanel">
+          <div class="panel-head"><h3>Minimum due this month</h3><span class="big" id="cardMinTotal"></span></div>
+          <div class="rows" id="cardMinRows"></div>
+          <p class="note" style="margin-top:10px" id="cardMinNote"></p>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h3>Total card balance</h3></div>
+          <div class="chartbox" id="cardChart"></div>
+          <div class="legend" id="cardLegend"></div>
+          <p class="callout" style="margin:12px 0 0" id="cardCallout"></p>
+        </div>
+        <div class="panel">
+          <h3>Card by card</h3>
+          <div class="rows" id="cardRows"></div>
+          <p class="note" style="margin-top:10px">Credit use (balance ÷ limit) affects your credit score. Under 30% is a common guide; under 10% is better.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOUSING -->
+  <section class="page" id="page-housing" role="tabpanel" hidden>
+    <div class="page-head">
+      <h2>Housing</h2>
+      <p>Compare renting with buying. Lenders often look for housing at or under 28% of gross monthly income, and all debt payments at or under 36%.</p>
+    </div>
+    <div class="bench">
+      <div class="panel" id="homeInputs"></div>
+      <div class="results" id="homeResults">
+        <div class="stats" id="homeStats"></div>
+        <div class="panel">
+          <h3 id="homeRowsTitle">Monthly housing cost</h3>
+          <div class="alloc" id="homeAlloc" style="margin-bottom:10px"></div>
+          <div class="rows" id="homeRows"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- JOBS -->
+  <section class="page" id="page-jobs" role="tabpanel" hidden>
+    <div class="page-head">
+      <h2>Job offers</h2>
+      <p>A bigger salary can shrink once you count taxes, health premiums, retirement match and commuting. Pick one to use as the income in your plan.</p>
+    </div>
+    <div id="jobInclude" style="margin-top:18px"></div>
+    <div class="panel">
+      <h3>Real yearly value, after tax and costs</h3>
+      <div class="bars" id="jobBars"></div>
+    </div>
+    <div class="jobs" id="jobList"></div>
+    <div style="margin-top:14px"><button class="btn" data-act="addjob" id="addJobBtn">Add an offer</button></div>
+  </section>
+
+</main>
+
+<footer class="wrap">
+  <p>Planning estimates only, not tax, legal or financial advice. Taxes use 2026 federal brackets and standard deductions with a flat state rate; loan offers and prices change often, so confirm with lenders and dealers. The 10-year projection raises your pay and your costs each year by the rates you set; fixed-rate loan payments stay the same.</p>
+  <p id="saveNote">Your numbers are private to you.</p>
+  <div class="actions"><button class="btn small" data-act="copyplan">Copy my plan</button><button class="btn small" data-act="pasteplan">Paste a plan</button><button class="btn small danger" data-act="reset" id="resetBtn">Reset to example numbers</button></div>
+  <div class="movebox" id="moveBox" hidden>
+    <p class="note" id="moveMsg"></p>
+    <textarea id="moveText" spellcheck="false" autocomplete="off" aria-label="Plan code"></textarea>
+    <div class="actions"><button class="btn small primary" data-act="loadplan" id="loadPlanBtn">Load this plan</button><button class="btn small" data-act="closemove">Close</button></div>
+  </div>
+</footer>
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- defaults (example plan) ---------- */
+const LOAN_DEF = {name:"Loan", bal:0, apr:6, years:10};
+const CARD_DEF = {name:"Card", bal:0, apr:19.7, limit:5000, promoApr:0, promoMonths:0};
+const JOB_DEF = {title:"Offer", salary:60000, bonus:0, match:3, health:150, commute:150, raise:3};
+const DEFAULTS = {
+  v:1, example:true,
+  income:{filing:"single", salary:68000, bonus:0, k401:6, match:4, health:150, state:2.5, raise:3,
+          spend:1100, spendOn:true, savings:8000, retire:3000, ret:6, infl:3},
+  car:{on:true, fuel:"gas", down:2500, trade:0, tax:6.625, fees:700, miles:12000, gasPrice:3.2, elec:0.23, pubShare:20, pubPrice:0.48,
+       gas:{preset:"k4", price:23635, apr:3.99, term:60, mpg:33, ins:160, maint:40, dep:15},
+       ev:{preset:"bolt", price:28995, apr:6.35, term:60, kwh:25.5, ins:175, maint:25, dep:20, rebate:1500, charger:1200},
+       custom:[]},
+  loans:{list:[{name:"Federal Direct loans", bal:21000, apr:5.8, years:10},{name:"Private loan", bal:8000, apr:9.2, years:10}], extra:0, on:true},
+  cards:{list:[{name:"Visa", bal:2400, apr:22.99, limit:5000, promoApr:0, promoMonths:0},{name:"Store card", bal:650, apr:29.99, limit:1000, promoApr:0, promoMonths:0}],
+         pay:150, strategy:"avalanche", minPct:1, minFloor:35, on:true},
+  home:{on:true, mode:"rent", rent:1500, rins:15, util:150, price:375000, downPct:10, rate:6.25, term:30, ptax:2.2,
+        hins:1800, hoa:0, pmi:0.6, maint:1, appr:3, close:3},
+  jobs:{list:[{title:"Current role", salary:68000, bonus:0, match:4, health:150, commute:140, raise:3},
+              {title:"Offer: Analyst in NYC", salary:79000, bonus:4000, match:3, health:220, commute:340, raise:3.5}], active:0, on:true}
+};
+const PRESETS = {
+  k4:{label:"Kia K4 LX", price:23635, apr:3.99, term:60, mpg:33, note:"Kia: 3.99% for 60 months (2.9% for 48). Lowest price of the group."},
+  elantra:{label:"Hyundai Elantra SE", price:24120, apr:3.49, term:60, mpg:35, note:"Hyundai: 3.49% for 60 months, or $2,000 cash back instead."},
+  corolla:{label:"Toyota Corolla LE", price:24420, apr:5.99, term:60, mpg:34, note:"Toyota: 5.99% for 60 months nationally. Ask NJ dealers about 4.99% for 72."},
+  sentra:{label:"Nissan Sentra S", price:24145, apr:4.9, term:60, mpg:34, note:"Nissan: 4.9% for 60 months."},
+  kicks:{label:"Nissan Kicks S", price:24275, apr:6.35, term:60, mpg:31, note:"No special rate; uses the average new-car rate (6.35%). Cash rebates available."}
+};
+const EV_PRESETS = {
+  bolt:{label:"Chevy Bolt LT", price:28995, apr:6.35, term:60, kwh:25.5, rebate:1500, note:"The cheapest new EV in the U.S., about 255 miles of range. No special rate found, so this uses the average new-car rate (6.35%)."},
+  leaf:{label:"Nissan Leaf S+", price:31485, apr:4.9, term:60, kwh:24.8, rebate:1500, note:"About 303 miles of range. Nissan lists 4.9% for 60 months."},
+  niro:{label:"Kia Niro EV (0% deal)", price:41195, apr:0, term:72, kwh:30, rebate:5000, note:"October offer: 0% for 72 months plus $3,500 cash back, shown here with NJ's $1,500 rebate. Or take $10,000 cash back without the 0% rate. Ends Nov 2."}
+};
+
+const CAR_FIELDS = {gas:["price","apr","term","mpg","ins","maint","dep"], ev:["price","apr","term","kwh","ins","maint","dep","rebate","charger"]};
+function myCar(key){ return (S.car.custom || []).find(x => x.key === key) || null; }
+function carName(f){
+  const k = S.car[f].preset, b = (f==="ev" ? EV_PRESETS : PRESETS)[k], m = myCar(k);
+  return b ? b.label : m ? m.label : (f==="ev" ? "Your electric car" : "Your gas car");
+}
+
+/* ---------- state helpers ---------- */
+const clone = o => JSON.parse(JSON.stringify(o));
+function merge(def, src){
+  if(Array.isArray(def)) return Array.isArray(src) ? src : clone(def);
+  if(def && typeof def === "object"){
+    const out = {};
+    for(const k in def) out[k] = merge(def[k], src && typeof src === "object" ? src[k] : undefined);
+    return out;
+  }
+  return (src === undefined || src === null || typeof src !== typeof def) ? def : src;
+}
+function normalize(s){
+  if(s && s.car && s.car.price !== undefined && (typeof s.car.gas !== "object" || s.car.gas === null)){
+    const o = s.car;
+    s.car = {on:o.on, fuel:"gas", down:o.down, trade:o.trade, tax:o.tax, fees:o.fees, miles:o.miles, gasPrice:o.gas,
+      gas:{preset:o.preset, price:o.price, apr:o.apr, term:o.term, mpg:o.mpg, ins:o.ins, maint:o.maint, dep:o.dep}};
+  }
+  const hadCards = !!(s && s.cards), ownPlan = !!(s && s.example === false);
+  const n = merge(DEFAULTS, s);
+  if(ownPlan && !hadCards) n.cards.list = [];
+  n.loans.list = n.loans.list.slice(0,8).map(l => merge(LOAN_DEF, l));
+  n.cards.list = n.cards.list.slice(0,10).map(c => merge(CARD_DEF, c));
+  n.car.custom = n.car.custom.filter(x => x && typeof x.key === "string" && (x.fuel==="gas" || x.fuel==="ev")).slice(0,24)
+    .map(x => Object.assign(clone(n.car[x.fuel]), x, {label: String(x.label || "My car").slice(0,40)}));
+  n.jobs.list = n.jobs.list.slice(0,4).map(j => merge(JOB_DEF, j));
+  if(!n.jobs.list.length) n.jobs.list = [clone(JOB_DEF)];
+  if(n.jobs.active >= n.jobs.list.length) n.jobs.active = 0;
+  return n;
+}
+function getPath(p){ return p.split(".").reduce((o,k)=> o == null ? o : o[k], S); }
+function setPath(p, v){
+  const ks = p.split("."); let o = S;
+  for(let i=0;i<ks.length-1;i++) o = o[ks[i]];
+  o[ks[ks.length-1]] = v;
+}
+const fid = p => "f-" + p.replace(/\./g,"-");
+
+let S = loadLocal() || clone(DEFAULTS);
+S = normalize(S);
+
+/* ---------- formatting ---------- */
+const money = (n, d=0) => (n < -0.5 ? "−" : "") + "$" + Math.abs(n).toLocaleString("en-US",{minimumFractionDigits:d, maximumFractionDigits:d});
+const short = n => { const a=Math.abs(n), s=n<0?"−":""; if(a>=1e6) return s+"$"+(a/1e6).toFixed(a>=1e7?0:1)+"M"; if(a>=1e3) return s+"$"+Math.round(a/1e3)+"k"; return s+"$"+Math.round(a); };
+const pct = (x, d=0) => (x*100).toFixed(d) + "%";
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function monthLabel(m){ const d = new Date(); d.setDate(1); d.setMonth(d.getMonth()+m); return d.toLocaleDateString("en-US",{month:"short", year:"numeric"}); }
+function duration(m){ const y=Math.floor(m/12), r=m%12; return (y? y+" yr ":"") + (r? r+" mo":"") || "0 mo"; }
+
+/* ---------- finance math ---------- */
+function pmt(P, apr, n){ if(n<=0 || P<=0) return 0; const r=apr/1200; return r ? P*r/(1-Math.pow(1+r,-n)) : P/n; }
+function balAfter(P, apr, n, k){
+  if(P<=0 || k>=n) return 0; const r=apr/1200, p=pmt(P,apr,n);
+  return r ? Math.max(0, P*Math.pow(1+r,k) - p*(Math.pow(1+r,k)-1)/r) : Math.max(0, P - p*k);
+}
+const TAX = {
+  single:{std:16100, addl:200000, br:[[12400,.10],[50400,.12],[105700,.22],[201775,.24],[256225,.32],[640600,.35],[Infinity,.37]]},
+  married:{std:32200, addl:250000, br:[[24800,.10],[100800,.12],[211400,.22],[403550,.24],[512450,.32],[768700,.35],[Infinity,.37]]}
+};
+const SS_CAP = 184500, K401_MAX = 24500;
+function fedTax(t, br){ let tax=0, prev=0; for(const [cap,r] of br){ if(t>prev) tax += (Math.min(t,cap)-prev)*r; prev=cap; } return tax; }
+function payroll(inc, salary, bonus, health){
+  const gross = Math.max(0, salary + bonus);
+  const pre401 = Math.min(K401_MAX, Math.max(0, salary*inc.k401/100));
+  const hp = Math.max(0, health*12);
+  const t = TAX[inc.filing] || TAX.single;
+  const fed = fedTax(Math.max(0, gross - pre401 - hp - t.std), t.br);
+  const fw = Math.max(0, gross - hp);
+  const fica = Math.min(fw, SS_CAP)*0.062 + fw*0.0145 + Math.max(0, fw - t.addl)*0.009;
+  const state = Math.max(0, gross - pre401 - hp) * inc.state/100;
+  const take = gross - pre401 - hp - fed - fica - state;
+  const match = Math.max(0, Math.min(inc.k401, inc.match)/100*salary);
+  return {gross, pre401, health:hp, fed, fica, state, take, match};
+}
+function carCfg(c, which){
+  const v = c[which] || {};
+  return Object.assign({}, v, {fuel:which, on:c.on, down:c.down, trade:c.trade, tax:c.tax, fees:c.fees, miles:c.miles,
+    gasPrice:c.gasPrice, elec:c.elec, pubShare:c.pubShare, pubPrice:c.pubPrice,
+    rebate: which==="ev" ? v.rebate : 0, charger: which==="ev" ? v.charger : 0});
+}
+function carCalc(c){
+  const empty = {on:false, payment:0, running:0, monthly:0, financed:0, interest:0, fuel:0, under:0, tco5:0, charger:0, apr:0, n:1};
+  if(!c.on) return empty;
+  const n = Math.max(1, Math.round(c.term));
+  const taxable = Math.max(0, c.price - c.trade);
+  const financed = Math.max(0, c.price + taxable*c.tax/100 + c.fees - c.down - c.trade - c.rebate);
+  const payment = pmt(financed, c.apr, n);
+  const interest = payment*n - financed;
+  const share = Math.min(100, Math.max(0, c.pubShare))/100;
+  const fuel = c.fuel==="ev"
+    ? c.miles/12 * c.kwh/100 * ((1-share)*c.elec + share*c.pubPrice)
+    : (c.mpg > 0 ? c.miles/12/c.mpg*c.gasPrice : 0);
+  const running = c.ins + fuel + c.maint;
+  const value = m => c.price*Math.pow(1 - c.dep/100, m/12);
+  let under = 0;
+  for(let m=1;m<=n;m++){ if(balAfter(financed,c.apr,n,m) > value(m)) under = m; }
+  const tco5 = c.down + c.trade + c.charger + Math.min(n,60)*payment + 60*running + balAfter(financed,c.apr,n,60) - value(60);
+  return {on:true, kind:c.fuel, n, apr:c.apr, payment, running, monthly:payment+running, financed, interest, fuel, under, tco5, value,
+          ins:c.ins, maint:c.maint, miles:c.miles, charger:c.charger, rebate:c.rebate, price:c.price};
+}
+function loanSim(list, extra){
+  const loans = list.filter(l => l.bal > 0).map(l => ({bal:l.bal, r:l.apr/1200, apr:l.apr, min:pmt(l.bal, l.apr, Math.max(1, Math.round(l.years*12)))}));
+  const minTotal = loans.reduce((a,l)=>a+l.min, 0);
+  let m=0, interest=0;
+  const bal=[loans.reduce((a,l)=>a+l.bal,0)], pay=[0];
+  const order = loans.slice().sort((a,b)=>b.apr-a.apr);
+  while(loans.some(l=>l.bal>0.005) && m<600){
+    m++; let pool = minTotal + Math.max(0, extra), paid = 0;
+    for(const l of loans){ if(l.bal>0){ const i=l.bal*l.r; interest+=i; l.bal+=i; } }
+    for(const l of loans){ if(l.bal>0){ const p=Math.min(l.min, l.bal, pool); l.bal-=p; pool-=p; paid+=p; } }
+    for(const l of order){ if(pool>0 && l.bal>0){ const p=Math.min(pool,l.bal); l.bal-=p; pool-=p; paid+=p; } }
+    bal.push(loans.reduce((a,l)=>a+Math.max(0,l.bal),0)); pay.push(paid);
+  }
+  return {months:m, interest, minTotal, bal, pay, start:bal[0]};
+}
+function cardSim(list, budget, strategy, minPct, minFloor){
+  const cards = list.filter(c => c.bal > 0).map(c => ({name:c.name, bal:c.bal, apr:c.apr, pa:c.promoApr, pm:Math.round(c.promoMonths), it:0, paidOff:0}));
+  const total = () => cards.reduce((a,c)=>a+Math.max(0,c.bal),0);
+  let m=0, interest=0, mins1=0, first=[];
+  const bal=[total()], pay=[0];
+  while(cards.some(c=>c.bal>0.005) && m<600){
+    m++;
+    const rate = c => (m <= c.pm ? c.pa : c.apr);
+    for(const c of cards){ c.it = c.bal>0 ? c.bal*rate(c)/1200 : 0; interest += c.it; c.bal += c.it; }
+    const mins = cards.map(c => c.bal>0 ? Math.min(c.bal, Math.max(minFloor, (c.bal-c.it)*minPct/100 + c.it)) : 0);
+    const minSum = mins.reduce((a,b)=>a+b,0);
+    if(m===1){ mins1 = minSum; first = cards.map((c,j)=>({it:c.it, owed:c.bal, min:mins[j]})); }
+    let pool = Math.max(budget, minSum), paid = 0;
+    cards.forEach((c,j)=>{ const p = Math.min(mins[j], c.bal); c.bal -= p; pool -= p; paid += p; });
+    const order = cards.filter(c=>c.bal>0.005).sort(strategy==="snowball" ? (a,b)=>a.bal-b.bal : (a,b)=>rate(b)-rate(a));
+    for(const c of order){ if(pool<=0) break; const p = Math.min(pool, c.bal); c.bal -= p; pool -= p; paid += p; }
+    for(const c of cards){ if(c.bal<=0.005 && !c.paidOff){ c.bal = 0; c.paidOff = m; } }
+    bal.push(total()); pay.push(paid);
+  }
+  return {months:m, interest, bal, pay, mins1, first, start:bal[0], payoff:cards.map(c=>c.paidOff)};
+}
+function homeCalc(h){
+  if(h.mode !== "buy"){
+    const housing = h.rent + h.rins;
+    return {mode:"rent", housing, monthly:housing + h.util, parts:[["Rent",h.rent,"--c-home"],["Renter's insurance",h.rins,"--c-loan"],["Utilities",h.util,"--c-life"]], cashToClose:0};
+  }
+  const down = h.price*h.downPct/100, loan = Math.max(0, h.price-down), n = Math.max(1, Math.round(h.term*12));
+  const pi = pmt(loan, h.rate, n), tax = h.price*h.ptax/100/12, ins = h.hins/12;
+  const pmi = h.downPct < 20 ? loan*h.pmi/100/12 : 0;
+  let pmiEnd = 0;
+  if(pmi>0){ for(let m=1;m<=n;m++){ if(balAfter(loan,h.rate,n,m) <= 0.78*h.price){ pmiEnd=m; break; } } }
+  const maint = h.price*h.maint/100/12;
+  const housing = pi + tax + ins + pmi + h.hoa;
+  return {mode:"buy", down, loan, n, pi, tax, ins, pmi, pmiEnd, maint, housing, monthly:housing + maint + h.util,
+    cashToClose: down + h.price*h.close/100,
+    parts:[["Principal & interest",pi,"--c-home"],["Property tax",tax,"--c-car"],["Home insurance",ins,"--c-loan"],["PMI",pmi,"--bad"],["HOA",h.hoa,"--warn"],["Maintenance",maint,"--c-life"],["Utilities",h.util,"--c-left"]]};
+}
+function maxPrice(h, budget){
+  let lo=0, hi=5e6;
+  for(let i=0;i<50;i++){ const mid=(lo+hi)/2; const c=homeCalc(Object.assign({}, h, {mode:"buy", price:mid})); if(c.housing>budget) hi=mid; else lo=mid; }
+  return lo;
+}
+
+/* ---------- whole-plan model ---------- */
+function model(){
+  const inc = S.income;
+  const pay = payroll(inc, inc.salary, inc.bonus, inc.health);
+  const car = carCalc(carCfg(S.car, S.car.fuel));
+  const ls = S.loans.on ? loanSim(S.loans.list, S.loans.extra) : loanSim([], 0);
+  const home = S.home.on ? homeCalc(S.home) : {mode:"none", housing:0, monthly:0, cashToClose:0, parts:[]};
+  const C2 = S.cards, cs = cardSim(C2.on ? C2.list : [], C2.pay, C2.strategy, C2.minPct, C2.minFloor);
+  const grossM = pay.gross/12, takeM = pay.take/12;
+  const cardM = cs.months>0 ? cs.pay[1] : 0;
+  const loanM = ls.months>0 ? ls.pay[1] : 0;
+  const parts = [
+    ["Housing", home.monthly, "--c-home", "housing", S.home.on],
+    ["Car", car.monthly, "--c-car", "car", S.car.on],
+    ["Student loans", loanM, "--c-loan", "loans", S.loans.on],
+    ["Credit cards", cardM, "--c-card", "cards", S.cards.on],
+    ["Everyday spending", inc.spendOn ? inc.spend : 0, "--c-life", "income", inc.spendOn]
+  ];
+  const committed = parts.reduce((a,p)=>a+p[1],0);
+  const left = takeM - committed;
+  const upfront = (S.car.on ? S.car.down + car.charger : 0) + home.cashToClose;
+  const startCash = inc.savings - upfront;
+
+  // 10-year projection, monthly
+  const pts = [];
+  let cash = startCash, k = inc.retire, salary = inc.salary, p = pay;
+  const r = inc.ret/1200, appr = S.home.appr/100;
+  for(let m=0;m<=120;m++){
+    if(m>0){
+      if(m>1 && (m-1)%12===0){ salary *= 1 + inc.raise/100; p = payroll(inc, salary, inc.bonus, inc.health); }
+      const f = Math.pow(1 + inc.infl/100, Math.floor((m-1)/12));
+      const carOut = car.on ? (m<=car.n ? car.payment : 0) + car.running*f : 0;
+      const loanOut = ls.pay[m] || 0;
+      let homeOut;
+      if(home.mode==="none") homeOut = 0;
+      else if(home.mode==="rent") homeOut = home.monthly*f;
+      else homeOut = (m<=home.n ? home.pi : 0) + (home.pmi>0 && (home.pmiEnd===0 || m<home.pmiEnd) ? home.pmi : 0) + (home.tax + home.ins + S.home.hoa + home.maint + S.home.util)*f;
+      const lm = p.take/12 - (inc.spendOn ? inc.spend : 0)*f - carOut - loanOut - homeOut - (cs.pay[m] || 0);
+      if(cash>0) cash *= 1 + r;
+      cash += lm;
+      k = k*(1+r) + (p.pre401 + p.match)/12;
+    }
+    const carVal = car.on ? car.value(m) : 0;
+    const carBal = car.on ? balAfter(car.financed, car.apr, car.n, m) : 0;
+    const loanBal = m < ls.bal.length ? ls.bal[m] : 0;
+    const homeVal = home.mode==="buy" ? S.home.price*Math.pow(1+appr, m/12) : 0;
+    const mort = home.mode==="buy" ? balAfter(home.loan, S.home.rate, home.n, m) : 0;
+    const cardBal = m < cs.bal.length ? cs.bal[m] : 0;
+    const debt = carBal + loanBal + mort + cardBal;
+    pts.push({m, cash, k, debt, nw: cash + k + carVal + homeVal - debt});
+  }
+  return {pay, car, ls, cs, cardM, home, grossM, takeM, loanM, parts, committed, left, upfront, startCash, pts};
+}
+
+/* ---------- charts ---------- */
+function niceTicks(min, max, count){
+  const span = (max-min) || 1, step0 = span/count, mag = Math.pow(10, Math.floor(Math.log10(step0))), nrm = step0/mag;
+  const step = (nrm<1.5?1:nrm<3?2:nrm<7?5:10)*mag;
+  const lo = Math.floor(min/step)*step, hi = Math.ceil(max/step)*step, t=[];
+  for(let v=lo; v<=hi+step/2; v+=step) t.push(Math.abs(v)<1e-9?0:v);
+  return t;
+}
+function lineChart(el, o){
+  const W = Math.max(300, Math.min(760, Math.round(el.clientWidth || 600))), H = W < 480 ? 210 : 250;
+  const L = 52, R = 14, T = 12, B = 26;
+  const ys = o.series.flatMap(s=>s.pts.map(p=>p[1]));
+  const t = niceTicks(Math.min(0, ...ys), Math.max(1, ...ys), W<480?3:4);
+  const y0 = t[0], y1 = t[t.length-1];
+  const X = x => L + (x/o.xMax)*(W-L-R), Y = y => T + (1-(y-y0)/((y1-y0)||1))*(H-T-B);
+  let g = "";
+  if(o.band && o.band[1] > o.band[0]) g += `<rect x="${X(o.band[0]).toFixed(1)}" y="${T}" width="${(X(o.band[1])-X(o.band[0])).toFixed(1)}" height="${H-T-B}" fill="var(--bad)" fill-opacity=".08"/>`;
+  for(const v of t){
+    g += `<line x1="${L}" x2="${W-R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" stroke="var(--line)" stroke-width="1"${v===0?"":' stroke-dasharray="2 4"'}/>`;
+    g += `<text x="${L-8}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end">${short(v)}</text>`;
+  }
+  for(const x of o.xTicks) g += `<text x="${X(x).toFixed(1)}" y="${H-7}" text-anchor="middle">${o.xFmt(x)}</text>`;
+  const base = Y(Math.min(Math.max(0,y0),y1));
+  for(const s of o.series){
+    if(!s.pts.length) continue;
+    const d = s.pts.map((p,i)=>(i?"L":"M")+X(p[0]).toFixed(1)+" "+Y(p[1]).toFixed(1)).join("");
+    if(s.area) g += `<path d="${d}L${X(s.pts[s.pts.length-1][0]).toFixed(1)} ${base.toFixed(1)}L${X(s.pts[0][0]).toFixed(1)} ${base.toFixed(1)}Z" fill="${s.color}" fill-opacity=".13" stroke="none"/>`;
+    g += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"${s.dash?' stroke-dasharray="6 5"':""}/>`;
+    const lp = s.pts[s.pts.length-1];
+    g += `<circle cx="${X(lp[0]).toFixed(1)}" cy="${Y(lp[1]).toFixed(1)}" r="4" fill="${s.color}" stroke="var(--surface)" stroke-width="2"/>`;
+  }
+  el.innerHTML = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(o.label)}">${g}</svg>`;
+}
+
+/* ---------- input rendering ---------- */
+function F(path, label, o={}){
+  const v = getPath(path);
+  return `<label class="field${o.wide?" wide":""}" for="${fid(path)}"><span class="lab">${label}</span><span class="inp">${o.pre?`<i>${o.pre}</i>`:""}<input id="${fid(path)}" data-path="${path}" type="number" inputmode="decimal" step="${o.step||"any"}" min="0" value="${v}">${o.suf?`<i>${o.suf}</i>`:""}</span>${o.hint?`<small>${o.hint}</small>`:""}</label>`;
+}
+function INC(path, what){
+  const on = !!getPath(path);
+  return `<label class="include${on?" is-on":""}" for="${fid(path)}"><input type="checkbox" role="switch" id="${fid(path)}" data-path="${path}" data-type="bool"${on?" checked":""}><span class="sw" aria-hidden="true"></span><span><b>${on?"Included in Overview":"Left out of Overview"}</b><small>${what}</small></span></label>`;
+}
+function T(path, label, o={}){
+  return `<label class="field${o.wide?" wide":""}" for="${fid(path)}"><span class="lab">${label}</span><span class="inp"><input id="${fid(path)}" data-path="${path}" data-type="str" type="text" maxlength="60" value="${esc(getPath(path))}"></span></label>`;
+}
+function renderIncome(){
+  const i = S.income;
+  document.getElementById("incomeInputs").innerHTML = `
+    <h3>Pay</h3>
+    <div class="fields">
+      <label class="field wide" for="${fid("income.filing")}"><span class="lab">Filing status</span><span class="inp"><select id="${fid("income.filing")}" data-path="income.filing" data-type="str">
+        <option value="single"${i.filing==="single"?" selected":""}>Single</option>
+        <option value="married"${i.filing==="married"?" selected":""}>Married filing jointly</option></select></span></label>
+      ${F("income.salary","Yearly salary",{pre:"$",step:1000})}
+      ${F("income.bonus","Yearly bonus",{pre:"$",step:500})}
+      ${F("income.k401","Your 401(k)",{suf:"% of pay",step:1})}
+      ${F("income.match","Employer match",{suf:"% of pay",step:0.5,hint:"Matched up to this much of what you put in."})}
+      ${F("income.health","Health premium",{pre:"$",suf:"/mo",step:10,hint:"Taken out of your paycheck before tax."})}
+      ${F("income.state","State & local tax",{suf:"%",step:0.25,hint:"An effective rate. NJ is roughly 2–4% for most earners."})}
+      ${F("income.raise","Raise each year",{suf:"%",step:0.5,wide:true})}
+      <div class="sep"></div>
+      <div class="sub">Spending &amp; savings</div>
+      ${INC("income.spendOn","Counts your everyday spending in the Overview. Your pay is always included, since everything else is measured against it.")}
+      ${F("income.spend","Everyday spending",{pre:"$",suf:"/mo",step:50,wide:true,hint:"Groceries, phone, gas for other trips, subscriptions, going out. Not housing, car or loans."})}
+      ${F("income.savings","Cash savings today",{pre:"$",step:500})}
+      ${F("income.retire","401(k) balance today",{pre:"$",step:500})}
+      ${F("income.ret","Return on savings",{suf:"%/yr",step:0.5,hint:"For cash savings and your 401(k)."})}
+      ${F("income.infl","Inflation",{suf:"%/yr",step:0.5,hint:"Raises rent, spending and running costs each year."})}
+    </div>`;
+}
+function renderCar(){
+  const c = S.car, ev = c.fuel==="ev", v = ev ? c.ev : c.gas, P = ev ? EV_PRESETS : PRESETS, k = ev ? "car.ev." : "car.gas.";
+  const p = P[v.preset], f = ev ? "ev" : "gas";
+  const mine = (c.custom || []).filter(x => x.fuel === f), cur = myCar(v.preset);
+  document.getElementById("carInputs").innerHTML = `
+    ${INC("car.on","Adds the car's payment and running costs, and its value and loan to your net worth.")}
+    <div id="carFields" style="display:flex;flex-direction:column;gap:16px">
+      <div class="seg" role="group" aria-label="Gas or electric">
+        <button data-act="fuel" data-f="gas" aria-pressed="${!ev}">Gas</button>
+        <button data-act="fuel" data-f="ev" aria-pressed="${ev}">Electric</button>
+      </div>
+      <div>
+        <h3>${ev ? "Start from an electric car" : "Start from an October 2026 offer"}</h3>
+        <div class="presets">${Object.entries(P).map(([key,x])=>`<button class="btn small${v.preset===key?" on":""}" data-act="preset" data-f="${f}" data-k="${key}">${x.label}</button>`).join("")}${mine.map(x=>`<button class="btn small mine${v.preset===x.key?" on":""}" data-act="preset" data-f="${f}" data-k="${esc(x.key)}">${esc(x.label)}</button>`).join("")}</div>
+        <p class="note" style="margin-top:8px">${p ? esc(p.note) + (ev ? "" : " Offers end Nov 2 and need strong credit.") : cur ? `One of your saved cars. Changes you make below are saved to it. <button class="linkbtn" data-act="rmcar" data-k="${esc(cur.key)}">Remove this car</button>` : "Custom numbers. Name and save them below to keep this car in your list."}</p>
+      </div>
+      <div class="fields">
+        <div class="sub">The ${ev ? "electric" : "gas"} car</div>
+        ${F(k+"price","Price incl. destination",{pre:"$",step:100,wide:!ev})}
+        ${ev ? F(k+"rebate","Rebates & cash back",{pre:"$",step:250,hint:"Includes NJ's $1,500 Charge Up rebate, if funds are open."}) : ""}
+        ${F(k+"apr","Loan rate (APR)",{suf:"%",step:0.1})}
+        ${F(k+"term","Loan length",{suf:"months",step:12})}
+        ${ev ? F(k+"kwh","Energy use",{suf:"kWh/100 mi",step:0.5,hint:"Lower is better. Small EVs use about 25–30."}) : F(k+"mpg","Fuel economy",{suf:"mpg",step:1})}
+        ${ev ? F(k+"charger","Home charger install",{pre:"$",step:100,hint:"One-time cost. Set to 0 if you won't install one."}) : ""}
+        ${F(k+"ins","Insurance",{pre:"$",suf:"/mo",step:10})}
+        ${F(k+"maint","Maintenance",{pre:"$",suf:"/mo",step:5,hint: ev ? "No oil changes; mostly tires and brakes." : ""})}
+        ${F(k+"dep","Value lost per year",{suf:"%",step:1,wide:true,hint: ev ? "EVs have tended to lose value faster than gas cars." : "New cars often lose about 15% a year."})}
+        <div class="sep"></div>
+        <div class="sub">Buying</div>
+        ${F("car.down","Down payment",{pre:"$",step:100})}
+        ${F("car.trade","Trade-in value",{pre:"$",step:100})}
+        ${F("car.tax","Sales tax",{suf:"%",step:0.125,hint:"NJ is 6.625%, EVs included."})}
+        ${F("car.fees","Dealer & DMV fees",{pre:"$",step:50})}
+        <div class="sep"></div>
+        <div class="sub">Driving &amp; energy</div>
+        ${F("car.miles","Miles per year",{step:1000,wide:true})}
+        ${F("car.gasPrice","Gas price",{pre:"$",suf:"/gal",step:0.05})}
+        ${F("car.elec","Home electricity",{pre:"$",suf:"/kWh",step:0.01,hint:"NJ averages about $0.23."})}
+        ${F("car.pubShare","Public charging",{suf:"% of miles",step:5,hint:"Higher if you can't charge at home."})}
+        ${F("car.pubPrice","Public charging price",{pre:"$",suf:"/kWh",step:0.01,hint:"Fast chargers often cost more."})}
+      </div>
+      <div class="addcar">
+        <h3>Add your own car</h3>
+        <p class="note">Any ${ev ? "electric" : "gas"} car works, new or used. Enter its price, loan rate, ${ev ? "energy use" : "mpg"} and costs in the car section above, then name it and save it to your list.</p>
+        <div class="item-head"><span class="inp"><input id="carNewName" type="text" maxlength="40" placeholder="${ev ? "e.g. 2023 Tesla Model 3 (used)" : "e.g. 2026 Honda Civic LX"}" aria-label="Name for this car"></span><button class="btn primary small" data-act="savecar" data-f="${f}">Save car</button></div>
+        <p class="note" id="carSaveMsg" role="status"></p>
+      </div>
+    </div>`;
+}
+function renderLoans(){
+  const L = S.loans;
+  document.getElementById("loanInputs").innerHTML = `
+    ${INC("loans.on","Adds your loan payments to your monthly costs and balances to your debt.")}
+    <div id="loanFields">
+    <h3>Your loans</h3>
+    <div class="list">${L.list.map((l,i)=>`
+      <div class="item">
+        <div class="item-head"><span class="inp"><input id="${fid("loans.list."+i+".name")}" data-path="loans.list.${i}.name" data-type="str" type="text" maxlength="60" value="${esc(l.name)}" aria-label="Loan name"></span>
+          <button class="btn small danger" data-act="rmloan" data-i="${i}" aria-label="Remove ${esc(l.name)}">Remove</button></div>
+        <div class="fields">
+          ${F("loans.list."+i+".bal","Balance",{pre:"$",step:500,wide:true})}
+          ${F("loans.list."+i+".apr","Interest rate",{suf:"%",step:0.1})}
+          ${F("loans.list."+i+".years","Years left",{suf:"yrs",step:1})}
+        </div>
+      </div>`).join("") || `<p class="note">No loans yet. Add one, or leave this empty if you have none.</p>`}</div>
+    <div style="margin-top:12px">${L.list.length<8?`<button class="btn" data-act="addloan">Add a loan</button>`:""}</div>
+    <div class="sep" style="margin:16px 0"></div>
+    <div class="fields">${F("loans.extra","Extra payment each month",{pre:"$",suf:"/mo",step:25,wide:true,hint:"Goes to the highest-rate loan first."})}</div>
+    </div>`;
+}
+function renderCards(){
+  const C = S.cards;
+  document.getElementById("cardInputs").innerHTML = `
+    ${INC("cards.on","Adds your card payments to your monthly costs and balances to your debt.")}
+    <div id="cardFields">
+    <h3>Your payoff plan</h3>
+    <div class="fields">
+      ${F("cards.pay","What you'll pay each month",{pre:"$",suf:"/mo",step:25,wide:true,hint:"Total across all cards, the same amount every month. If it's below the minimums, the minimums are used."})}
+      <div class="field wide"><span class="lab">Put extra money toward</span>
+        <div class="seg" role="group" aria-label="Payoff order">
+          <button data-act="cardstrat" data-s="avalanche" aria-pressed="${C.strategy!=="snowball"}">Highest rate first</button>
+          <button data-act="cardstrat" data-s="snowball" aria-pressed="${C.strategy==="snowball"}">Smallest balance first</button>
+        </div>
+        <small>Highest rate first saves the most interest. Smallest balance first clears whole cards sooner, which some people find motivating.</small></div>
+      ${F("cards.minPct","Minimum payment",{suf:"% + interest",step:0.5,hint:"A common formula; check your statement."})}
+      ${F("cards.minFloor","Minimum is at least",{pre:"$",step:5})}
+    </div>
+    <div class="sep" style="margin:16px 0"></div>
+    <h3>Your cards</h3>
+    <div class="list">${C.list.map((c,i)=>`
+      <div class="item">
+        <div class="item-head"><span class="inp"><input id="${fid("cards.list."+i+".name")}" data-path="cards.list.${i}.name" data-type="str" type="text" maxlength="60" value="${esc(c.name)}" aria-label="Card name"></span>
+          <button class="btn small danger" data-act="rmcard" data-i="${i}" aria-label="Remove ${esc(c.name)}">Remove</button></div>
+        <div class="fields">
+          ${F("cards.list."+i+".bal","Balance",{pre:"$",step:50})}
+          ${F("cards.list."+i+".limit","Credit limit",{pre:"$",step:500})}
+          ${F("cards.list."+i+".apr","Interest rate (APR)",{suf:"%",step:0.1,wide:true,hint:"The U.S. average is about 19.7%."})}
+          ${F("cards.list."+i+".promoApr","Intro rate",{suf:"%",step:0.1})}
+          ${F("cards.list."+i+".promoMonths","Intro months left",{suf:"mo",step:1})}
+        </div>
+      </div>`).join("") || `<p class="note">No cards yet. Add one, or leave this empty if you pay in full each month.</p>`}</div>
+    <p class="note" style="margin-top:8px">Moving a balance to a 0% intro card? Enter the new card's balance with its intro rate and months, and include any transfer fee in the balance.</p>
+    <div style="margin-top:12px">${C.list.length<10?`<button class="btn" data-act="addcard">Add a card</button>`:""}</div>
+    </div>`;
+}
+function renderHome(){
+  const h = S.home, buy = h.mode==="buy";
+  document.getElementById("homeInputs").innerHTML = `
+    ${INC("home.on","Adds rent or your mortgage and ownership costs, plus home equity if you buy.")}
+    <div id="homeFields" style="display:flex;flex-direction:column">
+    <div class="seg" role="group" aria-label="Rent or buy">
+      <button data-act="mode" data-m="rent" aria-pressed="${!buy}">Rent</button>
+      <button data-act="mode" data-m="buy" aria-pressed="${buy}">Buy</button>
+    </div>
+    <div class="fields" style="margin-top:16px">
+      ${buy ? `
+        ${F("home.price","Home price",{pre:"$",step:5000,wide:true})}
+        ${F("home.downPct","Down payment",{suf:"%",step:1,hint:"Under 20% usually adds PMI."})}
+        ${F("home.rate","Mortgage rate",{suf:"%",step:0.125})}
+        ${F("home.term","Mortgage length",{suf:"yrs",step:5})}
+        ${F("home.close","Closing costs",{suf:"% of price",step:0.5})}
+        <div class="sep"></div>
+        ${F("home.ptax","Property tax",{suf:"%/yr",step:0.1,hint:"NJ rates are among the highest in the U.S."})}
+        ${F("home.hins","Home insurance",{pre:"$",suf:"/yr",step:100})}
+        ${F("home.hoa","HOA dues",{pre:"$",suf:"/mo",step:25})}
+        ${F("home.pmi","PMI",{suf:"%/yr",step:0.1})}
+        ${F("home.maint","Maintenance",{suf:"%/yr",step:0.25,hint:"A common rule is 1% of the price per year."})}
+        ${F("home.appr","Home value growth",{suf:"%/yr",step:0.5})}
+        ${F("home.util","Utilities",{pre:"$",suf:"/mo",step:10,wide:true})}
+      ` : `
+        ${F("home.rent","Monthly rent",{pre:"$",step:25,wide:true})}
+        ${F("home.rins","Renter's insurance",{pre:"$",suf:"/mo",step:5})}
+        ${F("home.util","Utilities",{pre:"$",suf:"/mo",step:10})}
+      `}
+    </div>
+    </div>`;
+}
+function renderJobs(){
+  const J = S.jobs;
+  document.getElementById("jobInclude").innerHTML = INC("jobs.on","Uses the offer you pick as the pay on your Income tab. Turn off to compare offers without changing your plan.");
+  document.getElementById("jobList").innerHTML = J.list.map((j,i)=>`
+    <div class="item job${J.on && J.active===i?" active":""}">
+      <div class="item-head"><span class="inp"><input id="${fid("jobs.list."+i+".title")}" data-path="jobs.list.${i}.title" data-type="str" type="text" maxlength="60" value="${esc(j.title)}" aria-label="Job name"></span>
+        ${J.list.length>1?`<button class="btn small danger" data-act="rmjob" data-i="${i}" aria-label="Remove ${esc(j.title)}">Remove</button>`:""}</div>
+      <div class="fields">
+        ${F("jobs.list."+i+".salary","Salary",{pre:"$",step:1000})}
+        ${F("jobs.list."+i+".bonus","Bonus",{pre:"$",step:500})}
+        ${F("jobs.list."+i+".match","401(k) match",{suf:"%",step:0.5})}
+        ${F("jobs.list."+i+".health","Health premium",{pre:"$",suf:"/mo",step:10})}
+        ${F("jobs.list."+i+".commute","Commute cost",{pre:"$",suf:"/mo",step:10})}
+        ${F("jobs.list."+i+".raise","Raise each year",{suf:"%",step:0.5})}
+      </div>
+      <div class="rows" id="jobRows${i}"></div>
+      <button class="btn${J.on && J.active===i?" on":" primary"}" data-act="usejob" data-i="${i}">${J.on && J.active===i?"In your plan":"Use this job in my plan"}</button>
+    </div>`).join("");
+  document.getElementById("addJobBtn").hidden = J.list.length >= 4;
+}
+function renderInputs(){ renderIncome(); renderCar(); renderLoans(); renderCards(); renderHome(); renderJobs(); }
+
+/* ---------- output rendering ---------- */
+const stat = (k, v, s, cls="", lead=false) => `<div class="stat${lead?" lead":""}"><div class="k">${k}</div><div class="v ${cls}">${v}</div>${s?`<div class="s">${s}</div>`:""}</div>`;
+const row = (label, n, o={}) => `<div class="row${o.total?" total":""}"><span>${o.c?`<span class="sw" style="--c:var(${o.c})"></span>`:""}${label}</span><span><span class="n">${n}</span>${o.pc?`<span class="pc">${o.pc}</span>`:""}</span></div>`;
+const level = (v, good, warn, higherIsBetter) => higherIsBetter ? (v>=good?"good":v>=warn?"warn":"bad") : (v<=good?"good":v<=warn?"warn":"bad");
+const chipText = {good:"On track", warn:"Watch this", bad:"Needs work"};
+
+function update(){
+  const M = model();
+  const st = document.getElementById("status");
+  st.dataset.mode = S.example ? "example" : saveMode;
+  st.textContent = S.example ? "Example numbers" : saveMode==="account" ? "Saved to your account" : saveMode==="local" ? "Saved on this device" : "Not saved";
+  document.getElementById("exampleBanner").hidden = !S.example;
+
+  /* overview */
+  const leftLv = M.left < 0 ? "bad" : M.left < 0.1*M.takeM ? "warn" : "good";
+  const nw10 = M.pts[120].nw;
+  document.getElementById("ovStats").innerHTML =
+    stat("Take-home pay", money(M.takeM), "after tax, 401(k) and health", "", true) +
+    stat("Committed costs", money(M.committed), pct(M.takeM>0?M.committed/M.takeM:0)+" of take-home") +
+    stat("Left over", money(M.left), M.left<0?"short each month":"to save or spend", leftLv) +
+    stat("Net worth in 10 yrs", money(nw10), "today: "+money(M.pts[0].nw), nw10<0?"bad":"");
+  document.getElementById("ovTakeNote").textContent = money(M.takeM) + " take-home";
+  const allocParts = M.parts.filter(p=>p[1]>0);
+  const totalBar = Math.max(M.takeM, M.committed);
+  const barSegs = allocParts.map(p=>({w:p[1], c:p[2]}));
+  if(M.left>0) barSegs.push({w:M.left, c:"--c-left"});
+  document.getElementById("ovAlloc").innerHTML = barSegs.map(s=>`<div style="flex:${s.w.toFixed(2)};--c:var(${s.c})"></div>`).join("");
+  document.getElementById("ovRows").innerHTML =
+    M.parts.map(p=> p[4]
+      ? row(`<a href="#${p[3]}" data-act="tab" data-tab="${p[3]}" style="color:inherit">${p[0]}</a>`, money(p[1]), {c:p[2], pc: M.takeM>0?pct(p[1]/M.takeM):""})
+      : `<div class="row left-out"><span><span class="sw" style="--c:var(--line)"></span><a href="#${p[3]}" data-act="tab" data-tab="${p[3]}" style="color:inherit">${p[0]}</a></span><span class="pc">Left out</span></div>`).join("") +
+    row(M.left>=0?"Left over":"Shortfall", money(M.left), {c:M.left>=0?"--c-left":"--bad", total:true});
+
+  const fe = M.grossM>0 ? M.home.housing/M.grossM : 0;
+  const carPay = M.car.on ? M.car.payment : 0;
+  const be = M.grossM>0 ? (M.home.housing + carPay + M.loanM + M.cs.mins1)/M.grossM : 0;
+  const limits = S.cards.list.reduce((a,c)=>a+(c.limit>0?c.limit:0),0);
+  const cardOwed = S.cards.list.reduce((a,c)=>a+Math.max(0,c.bal),0);
+  const limOwed = S.cards.list.reduce((a,c)=>a+(c.limit>0?Math.max(0,c.bal):0),0);
+  const noLimit = S.cards.list.some(c=>c.bal>0 && !(c.limit>0));
+  const util = limits>0 ? limOwed/limits : (cardOwed>0 ? 1 : 0);
+  const carShare = M.takeM>0 ? M.car.monthly/M.takeM : 0;
+  const efMonths = M.committed>0 ? M.startCash/M.committed : (M.startCash>=0 ? 99 : 0);
+  const checks = [
+    {t:"Monthly cash flow", lv:leftLv, d: M.left<0 ? `You'd spend ${money(-M.left)} more than you bring home each month.` : `${money(M.left)} left, ${pct(M.takeM>0?M.left/M.takeM:0)} of take-home. Aim for 10% or more.`},
+    {t:"Housing vs. income (28% rule)", off:!S.home.on, lv:level(fe,.28,.33), d: S.home.on ? `Housing is ${pct(fe)} of gross pay.` : "Housing is left out of your plan."},
+    {t:"All debt payments (36% rule)", lv:level(be,.36,.43), d:`Housing, car, loan and card minimum payments are ${pct(be)} of gross pay.`},
+    {t:"Credit card use", off:!S.cards.on, lv: M.cs.start>0 ? level(util,.30,.50) : "good", d: !S.cards.on ? "Credit cards are left out of your plan." : M.cs.start>0 ? `You're using ${pct(util)} of your card limits. Your plan clears ${money(M.cs.start)} by ${monthLabel(M.cs.months)}.` : "No card balances. Paying in full each month avoids interest."},
+    {t:"Car cost vs. take-home", off:!S.car.on, lv: M.car.on ? level(carShare,.15,.20) : "good", d: M.car.on ? `The car costs ${pct(carShare)} of take-home, all-in. Under 15% is comfortable.` : "The car is left out of your plan."},
+    {t:"Emergency fund", lv:level(efMonths,3,1,true), d: M.startCash<0 ? `Upfront costs (${money(M.upfront)}) are more than your savings by ${money(-M.startCash)}.` : `After upfront costs you'd have ${money(M.startCash)}, ${M.committed>0 ? "about "+efMonths.toFixed(1)+" months of costs" : "with no monthly costs counted"}. Aim for 3–6 months.`},
+    {t:"Getting your full 401(k) match", lv: S.income.k401>=S.income.match ? "good" : "warn", d: S.income.k401>=S.income.match ? `You put in ${S.income.k401}%, which captures the full ${S.income.match}% match (${money(M.pay.match)} a year).` : `Raising your contribution to ${S.income.match}% would add ${money((S.income.match-S.income.k401)/100*S.income.salary)} a year from your employer.`}
+  ];
+  document.getElementById("ovChecks").innerHTML = checks.map(c=>`<li><b>${c.t}</b><span class="chip ${c.off?"off":c.lv}">${c.off?"Left out":chipText[c.lv]}</span><p>${c.d}</p></li>`).join("");
+
+  lineChart(document.getElementById("ovChart"), {
+    label:"Projected net worth and debt over 10 years", xMax:120, xTicks:[0,24,48,72,96,120], xFmt:x=>x===0?"Now":"Yr "+x/12,
+    series:[
+      {pts:M.pts.map(p=>[p.m,p.nw]), color:"var(--accent)", area:true},
+      {pts:M.pts.map(p=>[p.m,p.debt]), color:"var(--bad)", dash:true}
+    ]});
+  document.getElementById("ovLegend").innerHTML = `<span style="--c:var(--accent)">Net worth: ${money(nw10)} in year 10</span><span class="dash" style="--c:var(--bad)">Debt owed: ${money(M.pts[120].debt)} in year 10</span>`;
+  const debtFree = M.pts.find(p=>p.m>0 && p.debt<1 && M.home.mode!=="buy");
+  document.getElementById("ovChartNote").textContent =
+    `Includes cash savings, your 401(k)${M.car.on?", the car's value":""}${M.home.mode==="buy"?", home equity":""}, minus debts. ` +
+    (debtFree ? `You'd be debt-free around ${monthLabel(debtFree.m)}. ` : "") +
+    `Payments that end (like a car loan) free up money for savings.`;
+
+  /* income */
+  const P = M.pay, eff = P.gross>0 ? (P.fed+P.fica+P.state)/P.gross : 0;
+  document.getElementById("incStats").innerHTML =
+    stat("Take-home per month", money(M.takeM), money(P.take)+" a year", "", true) +
+    stat("Taxes paid", pct(eff,1), money((P.fed+P.fica+P.state)/12)+" a month");
+  document.getElementById("incRows").innerHTML =
+    row("Gross pay", money(P.gross)) +
+    row("Your 401(k)", money(-P.pre401)) +
+    row("Health premiums", money(-P.health)) +
+    row("Federal income tax", money(-P.fed)) +
+    row("Social Security & Medicare", money(-P.fica)) +
+    row("State & local tax", money(-P.state)) +
+    row("Take-home pay", money(P.take), {total:true}) +
+    row("Plus employer 401(k) match", money(P.match), {pc:"goes to retirement"});
+
+  /* include switches */
+  document.querySelectorAll(".include").forEach(l=>{ const i=l.querySelector("input"); l.classList.toggle("is-on", i.checked); l.querySelector("b").textContent = i.checked ? "Included in Overview" : "Left out of Overview"; });
+  [["car",S.car.on],["loans",S.loans.on],["cards",S.cards.on],["housing",S.home.on],["jobs",S.jobs.on]].forEach(([t,on])=>document.getElementById("tab-"+t).classList.toggle("off", !on));
+  for(const [id,off] of [["loanResults",!S.loans.on],["loanFields",!S.loans.on],["cardResults",!S.cards.on],["cardFields",!S.cards.on],["homeResults",!S.home.on],["homeFields",!S.home.on]]){
+    const el = document.getElementById(id); if(el) el.classList.toggle("dim", off);
+  }
+
+  /* car */
+  const C = S.car.on ? M.car : carCalc(Object.assign(carCfg(S.car, S.car.fuel), {on:true}));
+  document.getElementById("carResults").classList.toggle("dim", !S.car.on);
+  const cf = document.getElementById("carFields"); if(cf) cf.classList.toggle("dim", !S.car.on);
+  if(C.on){
+    const isEV = C.kind==="ev";
+    document.getElementById("carStats").innerHTML =
+      stat("True monthly cost", money(C.monthly), "loan + insurance + "+(isEV?"charging":"gas")+" + upkeep", "", true) +
+      stat("Loan payment", money(C.payment), money(C.financed)+" financed") +
+      stat("Interest paid", money(C.interest), "over "+C.n+" months") +
+      stat("5-year cost", money(C.tco5), "everything spent, minus resale value");
+    lineChart(document.getElementById("carChart"), {
+      label:"Car loan balance compared with car value", xMax:C.n, band:[0, C.under],
+      xTicks: Array.from({length:Math.floor(C.n/12)+1},(_,i)=>i*12), xFmt:x=>x===0?"Now":(x/12)+" yr",
+      series:[
+        {pts:Array.from({length:C.n+1},(_,m)=>[m, C.value(m)]), color:"var(--c-car)", area:true},
+        {pts:Array.from({length:C.n+1},(_,m)=>[m, balAfter(C.financed,C.apr,C.n,m)]), color:"var(--bad)", dash:true}
+      ]});
+    document.getElementById("carNote").textContent = C.under>0
+      ? `You'd owe more than the car is worth for the first ${duration(C.under)} (shaded). Selling or totaling it then means paying the difference. A bigger down payment or a shorter loan closes the gap.`
+      : "You'd owe less than the car is worth the whole time, so you'd have equity from day one.";
+    document.getElementById("carRows").innerHTML =
+      row("Loan payment", money(C.payment), {c:"--c-car"}) +
+      row("Insurance", money(C.ins), {c:"--c-loan"}) +
+      row(isEV?"Charging":"Gas", money(C.fuel), {c:"--warn", pc:Math.round(C.miles/12)+" mi/mo"}) +
+      row("Maintenance", money(C.maint), {c:"--c-life"}) +
+      row("Total", money(C.monthly), {total:true, pc: M.takeM>0?pct(C.monthly/M.takeM)+" of take-home":""}) +
+      (isEV && C.charger>0 ? `<p class="note" style="margin-top:8px">Plus ${money(C.charger)} once for a home charger, counted in your upfront costs.</p>` : "");
+  }
+  {
+    const g = carCalc(Object.assign(carCfg(S.car,"gas"),{on:true})), e = carCalc(Object.assign(carCfg(S.car,"ev"),{on:true}));
+    const gn = carName("gas"), en = carName("ev");
+    const line = (label, a, b, lowWins, total) => `<tr${total?' class="total"':""}><td>${label}</td><td class="${lowWins&&a<b-0.5?"win":""}">${money(a)}</td><td class="${lowWins&&b<a-0.5?"win":""}">${money(b)}</td></tr>`;
+    document.getElementById("carCompare").innerHTML =
+      `<thead><tr><th></th><th>${esc(gn)}</th><th>${esc(en)}</th></tr></thead><tbody>` +
+      line("Price after rebates", S.car.gas.price, S.car.ev.price - S.car.ev.rebate, true) +
+      line("Loan payment", g.payment, e.payment, true) +
+      line("Gas or charging", g.fuel, e.fuel, true) +
+      line("Insurance + upkeep", g.ins+g.maint, e.ins+e.maint, true) +
+      line("Monthly cost", g.monthly, e.monthly, true, true) +
+      line("Upfront cash", S.car.down + S.car.trade, S.car.down + S.car.trade + e.charger, true) +
+      line("5-year cost", g.tco5, e.tco5, true, true) + `</tbody>`;
+    const dm = e.monthly - g.monthly, d5 = e.tco5 - g.tco5;
+    document.getElementById("cmpNote").textContent =
+      `The electric pick costs ${money(Math.abs(dm))} ${dm>=0?"more":"less"} per month and ${money(Math.abs(d5))} ${d5>=0?"more":"less"} over 5 years, counting resale value. ` +
+      `Energy alone saves ${money(Math.max(0,g.fuel-e.fuel))} a month at your prices. Switch the tab above to use either one in your plan.`;
+  }
+
+  /* loans */
+  const LS = S.loans.on ? M.ls : loanSim(S.loans.list, S.loans.extra), base = loanSim(S.loans.list, 0);
+  const saved = base.interest - LS.interest;
+  document.getElementById("loanStats").innerHTML = LS.start>0 ?
+    stat("Monthly payment", money(LS.minTotal + S.loans.extra), S.loans.extra>0?money(LS.minTotal)+" required + "+money(S.loans.extra)+" extra":"required minimum", "", true) +
+    stat("Debt-free", monthLabel(LS.months), duration(LS.months)+" from now") +
+    stat("Total interest", money(LS.interest), "on "+money(LS.start)+" borrowed") +
+    stat("Saved by paying extra", S.loans.extra>0?money(saved):"$0", S.loans.extra>0?duration(base.months-LS.months)+" sooner":"try adding $100/mo", S.loans.extra>0?"good":"")
+    : stat("No student loans", "$0", "add a loan to see a payoff plan", "", true);
+  const lc = document.getElementById("loanChart");
+  if(LS.start>0){
+    const series = [{pts:LS.bal.map((b,m)=>[m,b]), color:"var(--c-loan)", area:true}];
+    if(S.loans.extra>0) series.push({pts:base.bal.map((b,m)=>[m,b]), color:"var(--muted)", dash:true});
+    const xMax = Math.max(12, Math.ceil(Math.max(LS.months, base.months)/12)*12);
+    const yrs = xMax/12, stepY = yrs>12?4:yrs>6?2:1;
+    lineChart(lc, {label:"Student loan balance over time", xMax, xTicks:Array.from({length:Math.floor(yrs/stepY)+1},(_,i)=>i*stepY*12), xFmt:x=>x===0?"Now":(x/12)+" yr", series});
+    document.getElementById("loanLegend").innerHTML = `<span style="--c:var(--c-loan)">${S.loans.extra>0?"With extra payments":"Balance"}</span>` + (S.loans.extra>0?`<span class="dash" style="--c:var(--muted)">Minimums only</span>`:"");
+  } else { lc.innerHTML = `<p class="note">Nothing to pay off.</p>`; document.getElementById("loanLegend").innerHTML=""; }
+
+  /* cards */
+  {
+    const CS = S.cards.on ? M.cs : cardSim(S.cards.list, S.cards.pay, S.cards.strategy, S.cards.minPct, S.cards.minFloor), base = cardSim(S.cards.list, 0, S.cards.strategy, S.cards.minPct, S.cards.minFloor);
+    const saved = base.interest - CS.interest;
+    document.getElementById("cardStats").innerHTML = CS.start>0 ?
+      stat("Total owed", money(CS.start), limits>0 ? pct(util)+" of your "+money(limits)+" limit"+(noLimit?" (cards with a limit)":"") : "no limits entered", "", true) +
+      stat("Debt-free", monthLabel(CS.months), duration(CS.months)+" from now") +
+      stat("Interest you'll pay", money(CS.interest), "with your plan of "+money(Math.max(S.cards.pay, CS.mins1))+"/mo") +
+      stat("Saved vs. minimums", money(saved), base.months>CS.months ? duration(base.months-CS.months)+" sooner" : "raise your payment to save", saved>1?"good":"")
+      : stat("No card balances", "$0", "paying in full means no interest", "", true);
+    const minPanel = document.getElementById("cardMinPanel");
+    minPanel.hidden = !(CS.start>0);
+    if(CS.start>0){
+      let mi = 0;
+      const mrows = S.cards.list.filter(c=>c.bal>0).map(c=>{
+        const f = CS.first[mi++] || {it:0, owed:0, min:0};
+        const pctPart = (f.owed - f.it)*S.cards.minPct/100 + f.it;
+        const why = f.min >= f.owed - 0.005 ? "pays off the balance"
+          : S.cards.minFloor > pctPart ? money(S.cards.minFloor)+" floor applies"
+          : money(f.it,2)+" interest + "+S.cards.minPct+"% of balance";
+        return `<div class="row"><span>${esc(c.name)} <span class="pc">${why}</span></span><span class="n">${money(f.min,2)}</span></div>`;
+      }).join("");
+      document.getElementById("cardMinTotal").textContent = money(CS.mins1,2);
+      document.getElementById("cardMinRows").innerHTML = mrows + row("Total minimum", money(CS.mins1,2), {total:true});
+      document.getElementById("cardMinNote").textContent = S.cards.pay >= CS.mins1
+        ? `Your plan pays ${money(S.cards.pay)} every month, ${money(S.cards.pay - CS.mins1,2)} above this month's minimum. The minimum drops as the balance falls${base.pay.length>12 ? " (to about "+money(base.pay[12])+" a year from now)" : ""}, so a fixed payment pulls further ahead of it each month. Paying only the minimum, as it drops, takes ${duration(base.months)}.`
+        : `The ${money(S.cards.pay)} you entered is below the minimums, so the plan uses ${money(CS.mins1,2)}. Your statement's exact minimum may differ slightly.`;
+    }
+    const cc = document.getElementById("cardChart");
+    if(CS.start>0){
+      const xMax = Math.max(12, Math.ceil(Math.max(CS.months, base.months)/12)*12), yrs = xMax/12;
+      const stepY = yrs>16?5:yrs>8?2:1;
+      lineChart(cc, {label:"Credit card balance over time", xMax,
+        xTicks:Array.from({length:Math.floor(yrs/stepY)+1},(_,i)=>i*stepY*12), xFmt:x=>x===0?"Now":(x/12)+" yr",
+        series:[{pts:CS.bal.map((b,m)=>[m,b]), color:"var(--c-card)", area:true}, {pts:base.bal.map((b,m)=>[m,b]), color:"var(--muted)", dash:true}]});
+      document.getElementById("cardLegend").innerHTML = `<span style="--c:var(--c-card)">Your plan</span><span class="dash" style="--c:var(--muted)">Minimums only</span>`;
+      document.getElementById("cardCallout").hidden = false;
+      document.getElementById("cardCallout").textContent = `Paying only the minimums would take ${duration(base.months)} and cost ${money(base.interest)} in interest. Your plan takes ${duration(CS.months)} and costs ${money(CS.interest)}.`;
+    } else { cc.innerHTML = `<p class="note">Nothing to pay off.</p>`; document.getElementById("cardLegend").innerHTML = ""; document.getElementById("cardCallout").hidden = true; }
+    let pi = 0;
+    document.getElementById("cardRows").innerHTML = S.cards.list.map(c=>{
+      const u = c.limit>0 ? c.bal/c.limit : (c.bal>0?1:0), lv = level(u,.30,.50);
+      const when = c.bal>0 ? (CS.payoff[pi++] ? "paid off "+monthLabel(CS.payoff[pi-1]) : "not paid off in 50 yrs") : "no balance";
+      return `<div class="row"><span>${esc(c.name)} <span class="pc">${when}</span></span><span><span class="n">${money(c.bal)} / ${money(c.limit)}</span> <span class="chip ${lv}">${pct(u)} used</span></span></div>`;
+    }).join("") || `<p class="note">No cards added.</p>`;
+  }
+
+  /* housing */
+  const H = S.home.on ? M.home : homeCalc(S.home);
+  const feH = M.grossM>0 ? H.housing/M.grossM : 0;
+  const homeBudget = 0.28*M.grossM;
+  document.getElementById("homeStats").innerHTML =
+    stat("Monthly housing", money(H.monthly), "including utilities"+(H.mode==="buy"?" & upkeep":""), "", true) +
+    stat("Share of gross pay", pct(feH), "28% or less is the usual guide", level(feH,.28,.33)) +
+    (H.mode==="buy"
+      ? stat("Cash needed upfront", money(H.cashToClose), "down payment + closing", S.income.savings - (S.car.on?S.car.down:0) < H.cashToClose ? "bad":"") +
+        stat("Price that fits 28%", money(Math.round(maxPrice(S.home, homeBudget)/1000)*1000), "at your rate and down payment")
+      : stat("Rent that fits 28%", money(homeBudget - S.home.rins), "based on your gross pay") +
+        stat("Rent per year", money(H.monthly*12), "including utilities"));
+  document.getElementById("homeRowsTitle").textContent = H.mode==="buy" ? "Monthly cost of owning" : "Monthly cost of renting";
+  const hp = H.parts.filter(p=>p[1]>0);
+  document.getElementById("homeAlloc").innerHTML = hp.map(p=>`<div style="flex:${p[1].toFixed(2)};--c:var(${p[2]})"></div>`).join("");
+  document.getElementById("homeRows").innerHTML = hp.map(p=>row(p[0], money(p[1]), {c:p[2]})).join("") +
+    row("Total", money(H.monthly), {total:true}) +
+    (H.mode==="buy" && H.pmi>0 ? `<p class="note" style="margin-top:8px">PMI drops off around ${monthLabel(H.pmiEnd)}, once you owe 78% of the price.</p>` : "");
+
+  /* jobs */
+  const vals = S.jobs.list.map(j=>{
+    const p = payroll(S.income, j.salary, j.bonus, j.health);
+    const real = p.take + p.match - j.commute*12;
+    let five=0, sal=j.salary; for(let y=0;y<5;y++){ const q=payroll(S.income, sal, j.bonus, j.health); five += q.take + q.match - j.commute*12; sal*=1+j.raise/100; }
+    return {p, real, five};
+  });
+  const maxReal = Math.max(1, ...vals.map(v=>v.real));
+  document.getElementById("jobBars").innerHTML = S.jobs.list.map((j,i)=>`<div class="bar"><span class="name" title="${esc(j.title)}">${esc(j.title)}</span><span class="track"><span class="fill" style="display:block;width:${Math.max(2,vals[i].real/maxReal*100).toFixed(1)}%"></span></span><span class="n big">${money(vals[i].real)}</span></div>`).join("");
+  S.jobs.list.forEach((j,i)=>{
+    const el = document.getElementById("jobRows"+i); if(!el) return;
+    const v = vals[i];
+    el.innerHTML = row("Take-home", money(v.p.take)) + row("Employer 401(k) match", "+"+money(v.p.match)) + row("Commuting", money(-j.commute*12)) +
+      row("Real value per year", money(v.real), {total:true}) + row("Over 5 years, with raises", money(v.five));
+  });
+}
+
+/* ---------- tabs ---------- */
+const TABS = ["overview","income","car","loans","cards","housing","jobs"];
+let current = "overview";
+function showTab(t, push){
+  if(!TABS.includes(t)) t = "overview";
+  current = t;
+  for(const n of TABS){
+    document.getElementById("page-"+n).hidden = n!==t;
+    const b = document.getElementById("tab-"+n); b.setAttribute("aria-selected", n===t ? "true":"false");
+  }
+  const tb = document.getElementById("tab-"+t), row = tb.parentElement;
+  if(row && row.scrollWidth > row.clientWidth) row.scrollLeft = Math.max(0, tb.offsetLeft - 16);
+  if(push){ try{ history.replaceState(null, "", "#"+t); }catch(e){} window.scrollTo({top:0}); }
+  update();
+}
+
+/* ---------- events ---------- */
+function onInput(e){
+  const el = e.target.closest("[data-path]"); if(!el) return;
+  const t = el.dataset.type; let v;
+  if(t==="bool") v = el.checked;
+  else if(t==="str") v = el.value;
+  else { v = parseFloat(el.value); if(!isFinite(v)) v = 0; }
+  if(getPath(el.dataset.path) === v) return;
+  setPath(el.dataset.path, v);
+  const cm = el.dataset.path.match(/^car\.(gas|ev)\.(\w+)$/);
+  if(cm){
+    const side = S.car[cm[1]], mc = myCar(side.preset);
+    if(mc) mc[cm[2]] = v;
+    else if(["price","apr","term","rebate","kwh","mpg"].includes(cm[2]) && side.preset){ side.preset = ""; renderCar(); refocus(el.id); }
+  }
+  // keep the chosen job and income in sync
+  const jm = el.dataset.path.match(/^jobs\.list\.(\d+)\.(salary|bonus|match|health|raise)$/);
+  if(jm && S.jobs.on && +jm[1]===S.jobs.active){ applyJob(+jm[1], false); }
+  if(el.dataset.path==="jobs.on"){ if(v) applyJob(S.jobs.active, true); else renderJobs(); refocus(el.id); }
+  S.example = false; dirty = true;
+  update(); queueSave();
+}
+document.addEventListener("input", onInput);
+document.addEventListener("change", onInput);
+
+function refocus(id){ const n = document.getElementById(id); if(n){ n.focus(); try{ const l=n.value.length; n.setSelectionRange && n.type==="text" && n.setSelectionRange(l,l); }catch(e){} } }
+function applyJob(i, rerender){
+  const j = S.jobs.list[i]; if(!j) return;
+  S.jobs.active = i;
+  Object.assign(S.income, {salary:j.salary, bonus:j.bonus, match:j.match, health:j.health, raise:j.raise});
+  if(rerender){ renderIncome(); renderJobs(); }
+  else {
+    for(const k of ["salary","bonus","match","health","raise"]){ const el=document.getElementById(fid("income."+k)); if(el && document.activeElement!==el) el.value = S.income[k]; }
+  }
+}
+
+let resetArmed = null;
+document.addEventListener("click", e=>{
+  const b = e.target.closest("[data-act]"); if(!b) return;
+  const a = b.dataset.act;
+  if(a==="tab"){ e.preventDefault(); showTab(b.dataset.tab, true); return; }
+  if(a==="preset"){
+    const f = b.dataset.f==="ev" ? "ev" : "gas", k = b.dataset.k, p = (f==="ev" ? EV_PRESETS : PRESETS)[k], m = myCar(k);
+    if(p) Object.assign(S.car[f], {preset:k, price:p.price, apr:p.apr, term:p.term}, f==="ev" ? {kwh:p.kwh, rebate:p.rebate} : {mpg:p.mpg});
+    else if(m){ const o = {preset:k}; for(const fl of CAR_FIELDS[f]) if(typeof m[fl]==="number") o[fl] = m[fl]; Object.assign(S.car[f], o); }
+    else return;
+    S.car.on = true; renderCar();
+  }
+  else if(a==="savecar"){
+    const f = b.dataset.f==="ev" ? "ev" : "gas", inp = document.getElementById("carNewName");
+    const count = S.car.custom.filter(x=>x.fuel===f).length;
+    if(S.car.custom.length >= 24){ document.getElementById("carSaveMsg").textContent = "You can save up to 24 cars. Remove one to add another."; return; }
+    const label = (inp && inp.value.trim()) || ("My " + (f==="ev" ? "electric" : "gas") + " car " + (count+1));
+    const key = "c" + Date.now().toString(36);
+    const entry = {key, fuel:f, label}; for(const fl of CAR_FIELDS[f]) entry[fl] = S.car[f][fl];
+    S.car.custom.push(entry); S.car[f].preset = key; S.car.on = true;
+    renderCar(); document.getElementById("carSaveMsg").textContent = "Saved “" + label + "” to your cars.";
+  }
+  else if(a==="rmcar"){
+    const k = b.dataset.k; S.car.custom = S.car.custom.filter(x=>x.key!==k);
+    for(const f of ["gas","ev"]) if(S.car[f].preset===k) S.car[f].preset = "";
+    renderCar();
+  }
+  else if(a==="fuel"){ S.car.fuel = b.dataset.f==="ev" ? "ev" : "gas"; renderCar(); }
+  else if(a==="addloan"){ S.loans.list.push({name:"Loan "+(S.loans.list.length+1), bal:10000, apr:6.5, years:10}); renderLoans(); }
+  else if(a==="rmloan"){ S.loans.list.splice(+b.dataset.i,1); renderLoans(); }
+  else if(a==="mode"){ S.home.mode = b.dataset.m; renderHome(); }
+  else if(a==="addcard"){ S.cards.list.push({name:"Card "+(S.cards.list.length+1), bal:1000, apr:19.7, limit:3000, promoApr:0, promoMonths:0}); renderCards(); }
+  else if(a==="rmcard"){ S.cards.list.splice(+b.dataset.i,1); renderCards(); }
+  else if(a==="cardstrat"){ S.cards.strategy = b.dataset.s==="snowball" ? "snowball" : "avalanche"; renderCards(); }
+  else if(a==="addjob"){ if(S.jobs.list.length<4){ S.jobs.list.push({title:"Offer "+S.jobs.list.length, salary:S.income.salary, bonus:0, match:S.income.match, health:S.income.health, commute:150, raise:3}); renderJobs(); } }
+  else if(a==="rmjob"){ const i=+b.dataset.i; S.jobs.list.splice(i,1); if(S.jobs.active===i) applyJob(0,true); else { if(S.jobs.active>i) S.jobs.active--; renderJobs(); } }
+  else if(a==="usejob"){ S.jobs.on = true; applyJob(+b.dataset.i, true); }
+  else if(a==="copyplan" || a==="pasteplan"){
+    const box = document.getElementById("moveBox"), ta = document.getElementById("moveText"), msg = document.getElementById("moveMsg"), lb = document.getElementById("loadPlanBtn");
+    box.hidden = false;
+    if(a==="copyplan"){
+      ta.value = JSON.stringify(S); lb.hidden = true;
+      msg.textContent = "This text is your whole plan. Copy it, then open Future Ledger on your other device, tap Paste a plan and paste it in.";
+      try{ navigator.clipboard.writeText(ta.value).then(()=>{ msg.textContent = "Copied. Open Future Ledger on your other device, tap Paste a plan and paste it in."; }, ()=>{ ta.select(); }); }catch(err){ ta.select(); }
+    } else {
+      ta.value = ""; lb.hidden = false; msg.textContent = "Paste the plan you copied, then tap Load this plan. It replaces the numbers here."; ta.focus();
+    }
+    return;
+  }
+  else if(a==="loadplan"){
+    const msg = document.getElementById("moveMsg");
+    let obj = null; try{ obj = JSON.parse(document.getElementById("moveText").value.trim()); }catch(err){}
+    if(!obj || typeof obj !== "object" || !obj.income){ msg.textContent = "That doesn't look like a Future Ledger plan. Copy it again and paste the whole thing."; return; }
+    S = normalize(obj); S.example = false; renderInputs(); dirty = true; update(); queueSave();
+    msg.textContent = "Plan loaded."; document.getElementById("loadPlanBtn").hidden = true; return;
+  }
+  else if(a==="closemove"){ document.getElementById("moveBox").hidden = true; return; }
+  else if(a==="reset"){
+    if(!resetArmed){ b.textContent = "Tap again to erase your numbers"; resetArmed = setTimeout(()=>{ resetArmed=null; b.textContent="Reset to example numbers"; }, 4000); return; }
+    clearTimeout(resetArmed); resetArmed=null; b.textContent="Reset to example numbers";
+    S = clone(DEFAULTS); renderInputs(); update(); dirty = true; queueSave(); return;
+  }
+  else return;
+  S.example = false; dirty = true; update(); queueSave();
+});
+
+let rz; window.addEventListener("resize", ()=>{ clearTimeout(rz); rz=setTimeout(update, 150); });
+
+/* ---------- saving: private per viewer ---------- */
+let saveMode = "none", dirty = false, docRef = null, writing = false, pendingWrite = false, saveTimer = null;
+function loadLocal(){ try{ const raw = localStorage.getItem("future-ledger-plan"); return raw ? JSON.parse(raw) : null; }catch(e){ return null; } }
+function saveLocal(){ try{ localStorage.setItem("future-ledger-plan", JSON.stringify(S)); return true; }catch(e){ return false; } }
+function queueSave(){ clearTimeout(saveTimer); saveTimer = setTimeout(flush, 700); }
+async function flush(){
+  if(saveLocal() && saveMode==="none") saveMode = "local";
+  if(!docRef){ update(); return; }
+  if(writing){ pendingWrite = true; return; }
+  writing = true;
+  try{ await docRef.set({state: clone(S), savedAt: new Date().toISOString()}); saveMode = "account"; }
+  catch(err){ if(err && err.code==="invalid_argument"){ docRef = null; } saveMode = loadLocal() ? "local" : "none"; }
+  writing = false;
+  updateSaveNote(); update();
+  if(pendingWrite){ pendingWrite = false; flush(); }
+}
+function updateSaveNote(){
+  document.getElementById("saveNote").textContent = saveMode==="account"
+    ? "Your numbers save privately to your Claude account. People you share this page with get their own blank-slate copy and can't see yours."
+    : "Your numbers save on this device only. Anyone you share this page with gets their own copy and can't see yours.";
+}
+if(loadLocal()) saveMode = "local";
+async function initStore(){
+  try{
+    if(!window.claude || typeof window.claude.use !== "function") return;
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if(!db || !user) return;
+    const id = await user.id(); if(!id) return;
+    const ref = db.doc("data/users/" + id + "/plan");
+    const snap = await ref.get();
+    docRef = ref;
+    if(snap.exists && snap.data() && snap.data().state && !dirty){
+      S = normalize(clone(snap.data().state)); saveLocal(); renderInputs();
+      saveMode = "account";
+    } else if(!S.example || dirty){
+      await flush();
+    }
+    updateSaveNote(); update();
+  }catch(e){ /* keep local saving */ }
+}
+
+/* ---------- boot ---------- */
+renderInputs();
+updateSaveNote();
+showTab((location.hash||"").replace("#",""), false);
+initStore();
+})();
+</script>
+
+<script>
+if("serviceWorker" in navigator && location.protocol==="https:" && !window.Capacitor){
+  window.addEventListener("load", ()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body></html>

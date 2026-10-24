@@ -1,0 +1,50 @@
+{
+  "name": "future-ledger-desktop",
+  "productName": "Future Ledger",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Future Ledger as a Windows and Mac app.",
+  "author": "Future Ledger",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --publish never"
+  },
+  "devDependencies": {
+    "electron": "^45.0.0",
+    "electron-builder": "^26.18.0"
+  },
+  "build": {
+    "appId": "com.futureledger.app",
+    "productName": "Future Ledger",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      { "from": "../www", "to": "www" }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon-win.png"
+    },
+    "nsis": {
+      "artifactName": "FutureLedger-Setup.exe",
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "shortcutName": "Future Ledger"
+    },
+    "mac": {
+      "target": [{ "target": "dmg", "arch": ["universal"] }],
+      "icon": "build/icon-mac.png",
+      "category": "public.app-category.finance",
+      "identity": "-",
+      "hardenedRuntime": false
+    },
+    "dmg": {
+      "artifactName": "FutureLedger-Mac.dmg"
+    }
+  }
+}

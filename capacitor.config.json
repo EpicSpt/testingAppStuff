@@ -1,0 +1,9 @@
+{
+  "appId": "com.futureledger.app",
+  "appName": "Future Ledger",
+  "webDir": "www",
+  "backgroundColor": "#F3F5F8",
+  "android": {
+    "allowMixedContent": false
+  }
+}
